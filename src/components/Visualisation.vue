@@ -1,29 +1,35 @@
 <template>
-    <v-content>
       <v-container>
-        <v-row>
-          <v-col xs="12" md="6" lg="12">
-            <p class="font-italic mb-2 mt-4 text-center">
-              {{disclaimer}}
-            </p>
-            <p class="font-weight-light mb-2 text-center">{{dateTime(time.updated)}}</p>
-            <p v-if="error" class="font-weight-light mt-7 text-center red accent-2" color="error">{{error}}</p>
-            <movable class="testmove" posTop="444" :grid="20" posLeft="222" shiftKey="true">
-                <chart :chart-data="datacollection" :options="options"></chart>
-            </movable>
-            </v-col>
-        </v-row>
-      </v-container>
-    </v-content>
+          <v-layout row wrap>
+           <v-flex xs12>
+            <subtitle :disclaimer="disclaimer" :time="time" :error="error"></subtitle>
+                <Moveable
+                    class="moveable"
+                    v-bind="moveable"
+                    @drag="handleDrag"
+                    @resize="handleResize"
+                    @scale="handleScale"
+                    @rotate="handleRotate"
+                    @warp="handleWarp"
+                    @pinch="handlePinch"
+                >
+                    <chart :chartData="datacollection" :options="options"></chart>
+                </Moveable>
+          </v-flex>
+        </v-layout>
+      </v-container>    
 </template>
 <script>
 import Chart from "./../Chart.js";
 import axios from 'axios';
-import moment from 'moment'
+import Moveable from 'vue-moveable';
+import Subtitle from './Subtitle.vue';
 
 export default {
   components: {
-    Chart
+    Moveable,
+    Chart,
+    Subtitle
   },
   data() {
     return {
@@ -32,8 +38,21 @@ export default {
       labels: [],
       data_set: [],
       disclaimer: "",
-      time:"",
+      time:{},
       error: "",
+      moveable: {
+      draggable: true,
+      throttleDrag: 0,
+      resizable: false,
+      throttleResize: 1,
+      keepRatio: false,
+      scalable: true,
+      throttleScale: 0,
+      rotatable: true,
+      throttleRotate: 0,
+      pinchable: true,
+      origin: false,
+      },
       options: {
           scales: {
               yAxes: [{
@@ -67,20 +86,11 @@ export default {
       this.disclaimer = response.data.disclaimer
       this.time = response.data.time
 
-      // for (var property in this.chartdata) {
-
-      //  if ( !this.chartdata.hasOwnProperty(property)) {
-      //       continue;
-      //   }
-
-      // this.labels.push(property);
-      // this.data_set.push(this.chartdata[property]);
-      
-      // }
-
             for (let [key, value] of Object.entries(response.data.bpi)) {
+
                 this.labels.push(key);
                 this.data_set.push(value);
+                
             }
 
             this.datacollection = {
@@ -98,25 +108,39 @@ export default {
     /* eslint-disable */
     } catch (e) {
       this.error = e.message
-      console.error(e)
     }
   },
     methods: {
-    dateTime(date) {
-      return moment(date).format('MMMM Do YYYY, h:mm:ss a')
-    }
+    handleDrag({ target, transform }) {
+      console.log('onDrag left, top', transform);
+      target.style.transform = transform;
+    },
+    handleResize({
+      target, width, height, delta,
+    }) {
+      console.log('onResize', width, height);
+      delta[0] && (target.style.width = `${width}px`);
+      delta[1] && (target.style.height = `${height}px`);
+    },
+    handleScale({ target, transform, scale }) {
+      console.log('onScale scale', scale);
+      target.style.transform = transform;
+    },
+    handleRotate({ target, dist, transform }) {
+      console.log('onRotate', dist);
+      target.style.transform = transform;
+    },
+    handleWarp({ target, transform }) {
+      console.log('onWarp', transform);
+      target.style.transform = transform;
+    },
+    handlePinch({ target }) {
+      console.log('onPinch', target);
+    },
   }
 };
 </script>
 
 <style>
-      div{
-        width:1000px;
-        margin: 0px auto;
-      }
-        .testmove {
-        display:block;
-        z-index: 999;
-      }
 </style>
 

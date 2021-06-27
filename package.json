@@ -14,6 +14,7 @@
     "v-movable": "^0.3.2",
     "vue": "^2.5.17",
     "vue-chartjs": "^3.4.0",
+    "vue-moveable": "^1.8.11",
     "vuetify": "^2.5.5",
     "xxxx": "^3.0.4"
   },
